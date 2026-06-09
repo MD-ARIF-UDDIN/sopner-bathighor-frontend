@@ -9,6 +9,7 @@ import Footer from '../components/Footer';
 import ReceiptModal from '../components/ReceiptModal';
 import { Plus, Search, Info, HandCoins, History, Edit, X, Save, ShieldAlert, Award, Download, FileText, Receipt } from 'lucide-react';
 import { exportToExcel, exportToPDF } from '../utils/exportUtils';
+import { recalcInvestmentFields } from '../utils/investmentCalculations';
 
 export default function Projects() {
   const { user } = useAuth();
@@ -46,11 +47,13 @@ export default function Projects() {
     nomineeName: '',
     nomineeMobile: '',
     investmentAmount: '',
+    interestPercentage: '',
     returnAmount: '',
     startDate: '',
     installmentDuration: '',
     monthlyInstallmentAmount: '',
-    status: 'active'
+    status: 'active',
+    lastEdited: 'percentage'
   });
 
   const [installmentForm, setInstallmentForm] = useState({
@@ -134,44 +137,20 @@ export default function Projects() {
     exportToPDF(dataToExport, cols, 'প্রজেক্ট তালিকা', 'Project_List');
   };
 
-  // Handlers for calculations on user input
+  const handleInvestmentChange = (val) => {
+    setProjectForm(prev => recalcInvestmentFields({ ...prev, investmentAmount: val }, 'investment'));
+  };
+
+  const handlePercentageChange = (val) => {
+    setProjectForm(prev => recalcInvestmentFields({ ...prev, interestPercentage: val }, 'percentage'));
+  };
+
   const handleReturnAmountChange = (val) => {
-    const retAmt = parseFloat(val);
-    const dur = parseInt(projectForm.installmentDuration);
-    const monthlyAmt = parseFloat(projectForm.monthlyInstallmentAmount);
-    setProjectForm(prev => {
-      const updated = { ...prev, returnAmount: val };
-      if (!isNaN(retAmt) && !isNaN(dur) && dur > 0) {
-        updated.monthlyInstallmentAmount = Math.ceil(retAmt / dur).toString();
-      } else if (!isNaN(retAmt) && !isNaN(monthlyAmt) && monthlyAmt > 0) {
-        updated.installmentDuration = Math.ceil(retAmt / monthlyAmt).toString();
-      }
-      return updated;
-    });
+    setProjectForm(prev => recalcInvestmentFields({ ...prev, returnAmount: val }, 'returnAmount'));
   };
 
   const handleDurationChange = (val) => {
-    const dur = parseInt(val);
-    const retAmt = parseFloat(projectForm.returnAmount);
-    setProjectForm(prev => {
-      const updated = { ...prev, installmentDuration: val };
-      if (!isNaN(retAmt) && !isNaN(dur) && dur > 0) {
-        updated.monthlyInstallmentAmount = Math.ceil(retAmt / dur).toString();
-      }
-      return updated;
-    });
-  };
-
-  const handleMonthlyAmountChange = (val) => {
-    const monthlyAmt = parseFloat(val);
-    const retAmt = parseFloat(projectForm.returnAmount);
-    setProjectForm(prev => {
-      const updated = { ...prev, monthlyInstallmentAmount: val };
-      if (!isNaN(retAmt) && !isNaN(monthlyAmt) && monthlyAmt > 0) {
-        updated.installmentDuration = Math.ceil(retAmt / monthlyAmt).toString();
-      }
-      return updated;
-    });
+    setProjectForm(prev => recalcInvestmentFields({ ...prev, installmentDuration: val }, 'duration'));
   };
 
   // Handle Add Project Submit
@@ -322,11 +301,13 @@ export default function Projects() {
       nomineeName: project.nomineeName,
       nomineeMobile: project.nomineeMobile,
       investmentAmount: project.investmentAmount,
+      interestPercentage: project.interestPercentage ?? '',
       returnAmount: project.returnAmount,
       startDate: new Date(project.startDate).toISOString().split('T')[0],
       installmentDuration: project.installmentDuration,
       monthlyInstallmentAmount: project.monthlyInstallmentAmount,
-      status: project.status
+      status: project.status,
+      lastEdited: 'percentage'
     });
     setShowEditModal(true);
   };
@@ -342,11 +323,13 @@ export default function Projects() {
       nomineeName: '',
       nomineeMobile: '',
       investmentAmount: '',
+      interestPercentage: '',
       returnAmount: '',
       startDate: '',
       installmentDuration: '',
       monthlyInstallmentAmount: '',
-      status: 'active'
+      status: 'active',
+      lastEdited: 'percentage'
     });
     setSelectedProject(null);
   };
@@ -486,9 +469,10 @@ export default function Projects() {
           </div>
         ) : (
           filteredProjects.map(project => {
-            // Calculate collection percentage
-            const pct = project.returnAmount > 0 
-              ? Math.min(100, Math.round((project.totalPaid / project.returnAmount) * 100))
+            // Calculate collection percentage based on current payable amount
+            const progressBase = project.totalPayable > 0 ? project.totalPayable : project.returnAmount;
+            const pct = progressBase > 0
+              ? Math.min(100, Math.round((project.totalPaid / progressBase) * 100))
               : 0;
 
             return (
@@ -508,7 +492,7 @@ export default function Projects() {
                       চালক: <strong style={{ fontWeight: '800', color: '#1e293b' }}>{project.driverName}</strong> · <strong style={{ fontWeight: '800', color: '#1e293b' }}>{toBanglaNumber(project.driverMobile)}</strong>
                     </p>
                   </div>
-                  {project.returnAmount - project.totalPaid > 0 && (
+                  {project.remainingBalance > 0 && (
                     <span style={{ 
                       fontSize: '0.75rem', 
                       color: 'var(--danger)', 
@@ -520,7 +504,7 @@ export default function Projects() {
                       border: '1px solid rgba(239, 68, 68, 0.2)',
                       whiteSpace: 'nowrap'
                     }}>
-                      মোট বকেয়া: {formatBDT(project.returnAmount - project.totalPaid)}
+                      মোট বকেয়া: {formatBDT(project.remainingBalance)}
                     </span>
                   )}
                   <span className={`list-badge ${
@@ -717,10 +701,21 @@ export default function Projects() {
                 </div>
               </div>
 
-              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '8px', marginBottom: '16px' }}>
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '8px', marginBottom: '12px' }}>
+                <div className="kpi-card" style={{ padding: '8px', borderLeftColor: '#0ea5e9' }}>
+                  <span className="kpi-title" style={{ fontSize: '0.75rem' }}>বর্তমান মোট প্রদেয়</span>
+                  <span className="kpi-value" style={{ fontSize: '1rem', color: '#0ea5e9' }}>{formatBDT(activeProjectDetail.calculations.totalPayable)}</span>
+                </div>
                 <div className="kpi-card" style={{ padding: '8px', borderLeftColor: '#8b5cf6' }}>
                   <span className="kpi-title" style={{ fontSize: '0.75rem' }}>অবশিষ্ট পাওনা</span>
                   <span className="kpi-value" style={{ fontSize: '1rem', color: '#8b5cf6' }}>{formatBDT(activeProjectDetail.calculations.remainingBalance)}</span>
+                </div>
+              </div>
+
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '8px', marginBottom: '16px' }}>
+                <div className="kpi-card" style={{ padding: '8px', borderLeftColor: '#f59e0b' }}>
+                  <span className="kpi-title" style={{ fontSize: '0.75rem' }}>মাসিক মুনাফা</span>
+                  <span className="kpi-value" style={{ fontSize: '1rem', color: '#f59e0b' }}>{formatBDT(activeProjectDetail.calculations.monthlyInterest)}</span>
                 </div>
                 <div className="kpi-card success" style={{ padding: '8px', borderLeftColor: activeProjectDetail.calculations.profit >= 0 ? 'var(--success)' : 'var(--danger)' }}>
                   <span className="kpi-title" style={{ fontSize: '0.75rem' }}>{activeProjectDetail.calculations.profit >= 0 ? 'প্রজেক্ট মুনাফা (লাভ)' : 'প্রজেক্ট লোকসান (ক্ষতি)'}</span>
@@ -766,7 +761,11 @@ export default function Projects() {
                   className="btn btn-accent"
                   style={{ marginTop: '16px' }}
                   onClick={() => {
-                    handleOpenCollectModal(activeProjectDetail.project);
+                    handleOpenCollectModal({
+                      ...activeProjectDetail.project,
+                      remainingBalance: activeProjectDetail.calculations.remainingBalance,
+                      totalPayable: activeProjectDetail.calculations.totalPayable
+                    });
                   }}
                 >
                   <HandCoins size={18} style={{ marginRight: '6px' }} />
@@ -901,10 +900,24 @@ export default function Projects() {
                     type="number"
                     required
                     min="1"
+                    step="any"
                     className="form-control"
                     placeholder="যেমন: 100000"
                     value={projectForm.investmentAmount}
-                    onChange={(e) => setProjectForm({ ...projectForm, investmentAmount: e.target.value })}
+                    onChange={(e) => handleInvestmentChange(e.target.value)}
+                  />
+                </div>
+
+                <div className="form-group">
+                  <label className="form-label">মুনাফার হার (%)</label>
+                  <input
+                    type="number"
+                    required
+                    step="any"
+                    className="form-control"
+                    placeholder="যেমন: 20"
+                    value={projectForm.interestPercentage}
+                    onChange={(e) => handlePercentageChange(e.target.value)}
                   />
                 </div>
 
@@ -914,6 +927,7 @@ export default function Projects() {
                     type="number"
                     required
                     min="1"
+                    step="any"
                     className="form-control"
                     placeholder="যেমন: 130000"
                     value={projectForm.returnAmount}
@@ -967,10 +981,12 @@ export default function Projects() {
                   <input
                     type="number"
                     required
-                    min="1"
+                    min="0"
+                    step="any"
+                    readOnly
                     className="form-control"
+                    style={{ backgroundColor: 'var(--bg-app)', cursor: 'not-allowed' }}
                     value={projectForm.monthlyInstallmentAmount}
-                    onChange={(e) => handleMonthlyAmountChange(e.target.value)}
                   />
                   {(() => {
                     const ret = parseFloat(projectForm.returnAmount);
@@ -978,7 +994,7 @@ export default function Projects() {
                     if (!isNaN(ret) && !isNaN(dur) && dur > 0) {
                       return (
                         <span style={{ color: 'var(--text-muted)', fontSize: '0.82rem', marginTop: '4px', display: 'block' }}>
-                          হিসাব: {formatBDT(ret)} ÷ {toBanglaNumber(dur)} মাস = {formatBDT(Math.round(ret / dur))}/মাস
+                          হিসাব: {formatBDT(ret)} ÷ {toBanglaNumber(dur)} মাস = {formatBDT(ret / dur)}/মাস
                         </span>
                       );
                     }
@@ -1127,9 +1143,23 @@ export default function Projects() {
                     type="number"
                     required
                     min="1"
+                    step="any"
                     className="form-control"
                     value={projectForm.investmentAmount}
-                    onChange={(e) => setProjectForm({ ...projectForm, investmentAmount: e.target.value })}
+                    onChange={(e) => handleInvestmentChange(e.target.value)}
+                  />
+                </div>
+
+                <div className="form-group">
+                  <label className="form-label">মুনাফার হার (%)</label>
+                  <input
+                    type="number"
+                    required
+                    step="any"
+                    className="form-control"
+                    placeholder="যেমন: 20"
+                    value={projectForm.interestPercentage}
+                    onChange={(e) => handlePercentageChange(e.target.value)}
                   />
                 </div>
 
@@ -1139,6 +1169,7 @@ export default function Projects() {
                     type="number"
                     required
                     min="1"
+                    step="any"
                     className="form-control"
                     value={projectForm.returnAmount}
                     onChange={(e) => handleReturnAmountChange(e.target.value)}
@@ -1190,10 +1221,12 @@ export default function Projects() {
                   <input
                     type="number"
                     required
-                    min="1"
+                    min="0"
+                    step="any"
+                    readOnly
                     className="form-control"
+                    style={{ backgroundColor: 'var(--bg-app)', cursor: 'not-allowed' }}
                     value={projectForm.monthlyInstallmentAmount}
-                    onChange={(e) => handleMonthlyAmountChange(e.target.value)}
                   />
                   {(() => {
                     const ret = parseFloat(projectForm.returnAmount);
@@ -1201,7 +1234,7 @@ export default function Projects() {
                     if (!isNaN(ret) && !isNaN(dur) && dur > 0) {
                       return (
                         <span style={{ color: 'var(--text-muted)', fontSize: '0.82rem', marginTop: '4px', display: 'block' }}>
-                          হিসাব: {formatBDT(ret)} ÷ {toBanglaNumber(dur)} মাস = {formatBDT(Math.round(ret / dur))}/মাস
+                          হিসাব: {formatBDT(ret)} ÷ {toBanglaNumber(dur)} মাস = {formatBDT(ret / dur)}/মাস
                         </span>
                       );
                     }
@@ -1255,6 +1288,14 @@ export default function Projects() {
 
               <div style={{ marginBottom: '16px', fontSize: '0.9rem' }}>
                 প্রজেক্ট: <strong>{selectedProject.projectName}</strong> (চালক: <strong>{selectedProject.driverName}</strong>)
+                {selectedProject.remainingBalance > 0 && (
+                  <span style={{ display: 'block', marginTop: '8px', fontSize: '0.82rem', color: 'var(--text-muted)' }}>
+                    বর্তমান অবশিষ্ট পাওনা: <strong style={{ color: 'var(--primary)' }}>{formatBDT(selectedProject.remainingBalance)}</strong>
+                    {selectedProject.totalPayable > 0 && (
+                      <span> (মোট প্রদেয়: {formatBDT(selectedProject.totalPayable)})</span>
+                    )}
+                  </span>
+                )}
               </div>
 
               <form onSubmit={handleInstallmentSubmit}>

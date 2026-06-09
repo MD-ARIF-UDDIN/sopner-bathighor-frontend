@@ -62,7 +62,7 @@ export default function Login() {
             }}
           />
           <h1 className="login-somiti-title">
-            একতা সঞ্চয় ও উদ্যোগ ফাউন্ডেশন
+            স্বপ্নের বাতিঘর 
           </h1>
         </div>
 
@@ -185,7 +185,7 @@ export default function Login() {
         {/* Footer */}
         <div className="login-footer" style={{ marginTop: '28px', textAlign: 'center', fontSize: '0.85rem' }}>
           <div style={{ color: 'rgba(255,255,255,0.75)', marginBottom: '8px' }}>
-            © {new Date().getFullYear()} একতা সঞ্চয় ও উদ্যোগ ফাউন্ডেশন
+            © {new Date().getFullYear()} স্বপ্নের বাতিঘর 
           </div>
           <div style={{ fontSize: '0.75rem', color: 'rgba(255,255,255,0.6)', lineHeight: 1.5 }}>
             Developed by: <span style={{ fontWeight: 'bold', color: 'rgba(255,255,255,0.88)' }}>Md Arif Uddin</span> |{' '}

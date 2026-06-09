@@ -26,7 +26,7 @@ export default function Header({ title, showBack = false, onBack }) {
 
       {/* Center: Somiti name + page title */}
       <div style={{ flex: 1, textAlign: 'center', margin: 0, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '1px' }}>
-        <span className="header-somiti-name">একতা সঞ্চয় সমিতি</span>
+        <span className="header-somiti-name">স্বপ্নের বাতিঘর </span>
         <h1 style={{ fontSize: '0.78rem', fontWeight: 500, color: 'rgba(255,255,255,0.8)', margin: 0, letterSpacing: '0.02em' }}>
           {title}
         </h1>

@@ -8,7 +8,7 @@ export default defineConfig({
     port: 3000,
     proxy: {
       '/api': {
-        target: 'https://ekota-sonchoy-backend.onrender.com',
+        target: 'https://shopner-bathighor-server.onrender.com',
         changeOrigin: true
       }
     }
