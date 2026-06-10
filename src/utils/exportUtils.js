@@ -139,7 +139,7 @@ export function exportToPDF(data, columns, title = 'রিপোর্ট', file
         <div style="display:flex;align-items:center;gap:12px;">
           <img src="${window.location.origin}/main_logo.png" style="width:46px;height:46px;border-radius:12px;box-shadow:0 3px 6px rgba(0,0,0,0.15);object-fit:cover;" />
           <div>
-            <h1 style="font-size:22px;color:#1e3a8a;font-weight:800;margin:0;letter-spacing:0.5px;">স্বপ্নের বাতিঘর সঞ্চয় ও উদ্যোগ ফাউন্ডেশন </h1>
+            <h1 style="font-size:22px;color:#1e3a8a;font-weight:800;margin:0;letter-spacing:0.5px;">স্বপ্নের বাতিঘর </h1>
             <p style="font-size:9px;color:#64748b;margin:2px 0 0 0;font-weight:500;text-transform:uppercase;letter-spacing:0.8px;">SOPNER BATHIGHOR</p>
           </div>
         </div>
@@ -185,7 +185,7 @@ export function exportToPDF(data, columns, title = 'রিপোর্ট', file
 
       <!-- Beautiful Styled Footer -->
       <div style="margin-top:40px;text-align:center;font-size:10px;color:#475569;border-top:1px solid #cbd5e1;padding-top:12px;page-break-inside:avoid;line-height:1.6;">
-        <div style="font-weight:700;">© ${new Date().getFullYear()} স্বপ্নের বাতিঘর সঞ্চয় ও উদ্যোগ ফাউন্ডেশন  | সর্বস্বত্ব সংরক্ষিত।</div>
+        <div style="font-weight:700;">© ${new Date().getFullYear()} স্বপ্নের বাতিঘর  | সর্বস্বত্ব সংরক্ষিত।</div>
         <div style="font-size:9px;color:#64748b;margin-top:2px;">
           Developed by: <span style="font-weight:bold;color:#1d4ed8;">Md Arif Uddin</span> | 
           <a href="https://wa.me/8801825334505" target="_blank" rel="noopener noreferrer" style="color:#1d4ed8;text-decoration:none;font-weight:700;margin-left:2px;">01825334505 (WhatsApp)</a>

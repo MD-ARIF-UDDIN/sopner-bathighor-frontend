@@ -40,7 +40,7 @@ export default function ReceiptModal({ receipt, onClose }) {
 
   // Format the WhatsApp message text
   const buildWhatsAppText = () => {
-    const orgName = 'স্বপ্নের বাতিঘর সঞ্চয় ও উদ্যোগ ফাউন্ডেশন ';
+    const orgName = 'স্বপ্নের বাতিঘর ';
     const lines = [
       `🏦 *${orgName}*`,
       `━━━━━━━━━━━━━━━━━━━━`,
@@ -197,7 +197,7 @@ export default function ReceiptModal({ receipt, onClose }) {
               color: '#ffffff', fontSize: '1.05rem', fontWeight: 800,
               marginBottom: '2px', textShadow: '0 1px 3px rgba(0,0,0,0.2)',
             }}>
-              স্বপ্নের বাতিঘর সঞ্চয় ও উদ্যোগ ফাউন্ডেশন
+              স্বপ্নের বাতিঘর
             </h2>
             <p style={{ color: 'rgba(255,255,255,0.82)', fontSize: '0.68rem', letterSpacing: '0.3px' }}>
               সঞ্চয় ও বিনিয়োগ ব্যবস্থাপনা সমিতি
