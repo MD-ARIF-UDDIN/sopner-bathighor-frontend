@@ -1,4 +1,4 @@
-# একতা সঞ্চয় ও উদ্যোগ ফাউন্ডেশন  (Frontend)
+# স্বপ্নের বাতিঘর সঞ্চয় ও উদ্যোগ ফাউন্ডেশন  (Frontend)
 
 This is the mobile-first, premium styled React SPA frontend application for **Tarun Udyokta Samonbay Samiti** (Cooperative Management System).
 

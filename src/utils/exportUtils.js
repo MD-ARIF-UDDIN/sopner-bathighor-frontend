@@ -88,16 +88,16 @@ export function exportToPDF(data, columns, title = 'রিপোর্ট', file
       </h3>
       <div style="display:flex;flex-wrap:wrap;gap:10px;">
         ${summableCols.map(c => {
-          const total = data.reduce((sum, row) => {
-            const val = c.key.split('.').reduce((o, k) => (o ? o[k] : ''), row);
-            return sum + parseBanglaFormattedNumber(val);
-          }, 0);
-          return `
+    const total = data.reduce((sum, row) => {
+      const val = c.key.split('.').reduce((o, k) => (o ? o[k] : ''), row);
+      return sum + parseBanglaFormattedNumber(val);
+    }, 0);
+    return `
             <div style="flex:1;min-width:130px;background:#fff;padding:10px 12px;border-radius:8px;border:1px solid #e2e8f0;box-shadow:0 1px 3px rgba(0,0,0,0.06);">
               <span style="font-size:10px;color:#64748b;display:block;margin-bottom:3px;font-weight:600;">মোট ${c.header}</span>
               <span style="font-size:15px;color:#1d4ed8;font-weight:800;">${formatBDT(total)}</span>
             </div>`;
-        }).join('')}
+  }).join('')}
       </div>
     </div>` : '';
 
@@ -141,7 +141,7 @@ export function exportToPDF(data, columns, title = 'রিপোর্ট', file
             ত
           </div>
           <div>
-            <h1 style="font-size:22px;color:#1e3a8a;font-weight:800;margin:0;letter-spacing:0.5px;">একতা সঞ্চয় ও উদ্যোগ ফাউন্ডেশন </h1>
+            <h1 style="font-size:22px;color:#1e3a8a;font-weight:800;margin:0;letter-spacing:0.5px;">স্বপ্নের বাতিঘর সঞ্চয় ও উদ্যোগ ফাউন্ডেশন </h1>
             <p style="font-size:9px;color:#64748b;margin:2px 0 0 0;font-weight:500;text-transform:uppercase;letter-spacing:0.8px;">Youth Entrepreneur Co-operative Association</p>
           </div>
         </div>
@@ -170,9 +170,9 @@ export function exportToPDF(data, columns, title = 'রিপোর্ট', file
           ${data.map((row, idx) => `
             <tr style="background:${idx % 2 === 0 ? '#ffffff' : '#f8fafc'};page-break-inside:avoid;">
               ${columns.map(c => {
-                const val = c.key.split('.').reduce((o, k) => (o ? o[k] : ''), row);
-                return `<td style="padding:7px 8px;border:1px solid #e2e8f0;color:#334155;word-wrap:break-word;vertical-align:top;">${val ?? ''}</td>`;
-              }).join('')}
+    const val = c.key.split('.').reduce((o, k) => (o ? o[k] : ''), row);
+    return `<td style="padding:7px 8px;border:1px solid #e2e8f0;color:#334155;word-wrap:break-word;vertical-align:top;">${val ?? ''}</td>`;
+  }).join('')}
             </tr>`).join('')}
         </tbody>
         <tfoot>
@@ -187,7 +187,7 @@ export function exportToPDF(data, columns, title = 'রিপোর্ট', file
 
       <!-- Beautiful Styled Footer -->
       <div style="margin-top:40px;text-align:center;font-size:10px;color:#475569;border-top:1px solid #cbd5e1;padding-top:12px;page-break-inside:avoid;line-height:1.6;">
-        <div style="font-weight:700;">© ${new Date().getFullYear()} একতা সঞ্চয় ও উদ্যোগ ফাউন্ডেশন  | সর্বস্বত্ব সংরক্ষিত।</div>
+        <div style="font-weight:700;">© ${new Date().getFullYear()} স্বপ্নের বাতিঘর সঞ্চয় ও উদ্যোগ ফাউন্ডেশন  | সর্বস্বত্ব সংরক্ষিত।</div>
         <div style="font-size:9px;color:#64748b;margin-top:2px;">
           Developed by: <span style="font-weight:bold;color:#1d4ed8;">Md Arif Uddin</span> | 
           <a href="https://wa.me/8801825334505" target="_blank" rel="noopener noreferrer" style="color:#1d4ed8;text-decoration:none;font-weight:700;margin-left:2px;">01825334505 (WhatsApp)</a>
@@ -197,12 +197,12 @@ export function exportToPDF(data, columns, title = 'রিপোর্ট', file
   `;
 
   const opt = {
-    margin:      [8, 8, 8, 8],
-    filename:    `${filename}.pdf`,
-    image:       { type: 'jpeg', quality: 0.98 },
+    margin: [8, 8, 8, 8],
+    filename: `${filename}.pdf`,
+    image: { type: 'jpeg', quality: 0.98 },
     html2canvas: { scale: 2, useCORS: true, letterRendering: true, scrollY: 0 },
-    jsPDF:       { unit: 'mm', format: 'a4', orientation: columns.length > 6 ? 'landscape' : 'portrait' },
-    pagebreak:   { mode: ['avoid-all', 'css', 'legacy'] }
+    jsPDF: { unit: 'mm', format: 'a4', orientation: columns.length > 6 ? 'landscape' : 'portrait' },
+    pagebreak: { mode: ['avoid-all', 'css', 'legacy'] }
   };
 
   html2pdf().set(opt).from(element).save();

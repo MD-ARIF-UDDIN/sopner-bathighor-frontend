@@ -22,7 +22,7 @@ export default function ReceiptModal({ receipt, onClose }) {
   if (!receipt) return null;
 
   const isDeposit = receipt.type === 'deposit';
-  
+
   // Use the database record ID to make receipt number unique and persistent
   const uniqueIdPart = receipt.id ? receipt.id.slice(-8).toUpperCase() : Date.now().toString().slice(-8);
   const receiptNumber = `RCP-${uniqueIdPart}`;
@@ -40,7 +40,7 @@ export default function ReceiptModal({ receipt, onClose }) {
 
   // Format the WhatsApp message text
   const buildWhatsAppText = () => {
-    const orgName = 'একতা সঞ্চয় ও উদ্যোগ ফাউন্ডেশন ';
+    const orgName = 'স্বপ্নের বাতিঘর সঞ্চয় ও উদ্যোগ ফাউন্ডেশন ';
     const lines = [
       `🏦 *${orgName}*`,
       `━━━━━━━━━━━━━━━━━━━━`,
@@ -197,7 +197,7 @@ export default function ReceiptModal({ receipt, onClose }) {
               color: '#ffffff', fontSize: '1.05rem', fontWeight: 800,
               marginBottom: '2px', textShadow: '0 1px 3px rgba(0,0,0,0.2)',
             }}>
-              একতা সঞ্চয় ও উদ্যোগ ফাউন্ডেশন 
+              স্বপ্নের বাতিঘর সঞ্চয় ও উদ্যোগ ফাউন্ডেশন
             </h2>
             <p style={{ color: 'rgba(255,255,255,0.82)', fontSize: '0.68rem', letterSpacing: '0.3px' }}>
               সঞ্চয় ও বিনিয়োগ ব্যবস্থাপনা সমিতি
@@ -371,9 +371,9 @@ export default function ReceiptModal({ receipt, onClose }) {
                 Developed by: <span style={{ color: '#1d4ed8', fontWeight: 700 }}>Md Arif Uddin</span>
               </div>
               <div>
-                📱 <a 
-                  href="https://wa.me/8801825334505" 
-                  target="_blank" 
+                📱 <a
+                  href="https://wa.me/8801825334505"
+                  target="_blank"
                   rel="noopener noreferrer"
                   style={{ color: '#1d4ed8', textDecoration: 'none', fontWeight: 600 }}
                 >
