@@ -137,12 +137,10 @@ export function exportToPDF(data, columns, title = 'রিপোর্ট', file
       <!-- Premium Designed Header -->
       <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;border-bottom:3px double #1d4ed8;padding-bottom:16px;page-break-inside:avoid;">
         <div style="display:flex;align-items:center;gap:12px;">
-          <div style="width:46px;height:46px;background:linear-gradient(135deg, #1e3a8a, #1d4ed8);border-radius:12px;display:flex;align-items:center;justify-content:center;color:#fff;font-weight:bold;font-size:22px;box-shadow:0 3px 6px rgba(29,78,216,0.25);">
-            ত
-          </div>
+          <img src="${window.location.origin}/main_logo.png" style="width:46px;height:46px;border-radius:12px;box-shadow:0 3px 6px rgba(0,0,0,0.15);object-fit:cover;" />
           <div>
             <h1 style="font-size:22px;color:#1e3a8a;font-weight:800;margin:0;letter-spacing:0.5px;">স্বপ্নের বাতিঘর সঞ্চয় ও উদ্যোগ ফাউন্ডেশন </h1>
-            <p style="font-size:9px;color:#64748b;margin:2px 0 0 0;font-weight:500;text-transform:uppercase;letter-spacing:0.8px;">Youth Entrepreneur Co-operative Association</p>
+            <p style="font-size:9px;color:#64748b;margin:2px 0 0 0;font-weight:500;text-transform:uppercase;letter-spacing:0.8px;">SOPNER BATHIGHOR</p>
           </div>
         </div>
         <div>
@@ -196,9 +194,10 @@ export function exportToPDF(data, columns, title = 'রিপোর্ট', file
     </div>
   `;
 
+  const exportDate = new Date().toLocaleDateString('en-GB').replace(/\//g, '-');
   const opt = {
     margin: [8, 8, 8, 8],
-    filename: `${filename}.pdf`,
+    filename: `${filename} (${exportDate}).pdf`,
     image: { type: 'jpeg', quality: 0.98 },
     html2canvas: { scale: 2, useCORS: true, letterRendering: true, scrollY: 0 },
     jsPDF: { unit: 'mm', format: 'a4', orientation: columns.length > 6 ? 'landscape' : 'portrait' },
