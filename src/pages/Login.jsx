@@ -77,13 +77,13 @@ export default function Login() {
           boxShadow: '0 20px 40px rgba(0, 0, 0, 0.22)'
         }}>
           <h2 style={{
-            marginBottom: '24px', textAlign: 'center', fontSize: '1.4rem',
-            color: 'var(--primary-dark)', fontWeight: '700'
+            marginBottom: '24px', textAlign: 'center', fontSize: '1.45rem',
+            color: 'var(--primary-dark)', fontWeight: '800', letterSpacing: '-0.02em'
           }}>লগইন করুন</h2>
 
           <form onSubmit={handleSubmit}>
-            <div className="form-group" style={{ marginBottom: '20px' }}>
-              <label className="form-label" htmlFor="username" style={{ fontWeight: '600', color: '#334155' }}>ইউজারনেম</label>
+            <div className="form-group" style={{ marginBottom: '22px' }}>
+              <label className="form-label" htmlFor="username" style={{ fontWeight: '700', color: '#475569', fontSize: '0.88rem', marginBottom: '6px' }}>ইউজারনেম</label>
               <input
                 type="text"
                 id="username"
@@ -94,28 +94,31 @@ export default function Login() {
                 disabled={loadingState}
                 autoCapitalize="none"
                 style={{
-                  backgroundColor: '#fefce8',
-                  border: '1px solid #d6b87d',
-                  borderRadius: '12px',
-                  padding: '12px 16px',
-                  fontSize: '1rem',
-                  transition: 'all 0.3s ease'
+                  backgroundColor: '#ffffff',
+                  border: '1px solid #cbd5e1',
+                  borderRadius: '14px',
+                  padding: '14px 16px',
+                  fontSize: '0.95rem',
+                  color: '#1e293b',
+                  fontWeight: '500',
+                  transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
+                  boxShadow: 'inset 0 1px 2px rgba(0,0,0,0.02)'
                 }}
                 onFocus={(e) => {
                   e.target.style.borderColor = 'var(--primary)';
-                  e.target.style.boxShadow = '0 0 0 3px var(--primary-glow)';
-                  e.target.style.backgroundColor = '#fffbeb';
+                  e.target.style.boxShadow = '0 0 0 4px var(--primary-glow)';
+                  e.target.style.backgroundColor = '#ffffff';
                 }}
                 onBlur={(e) => {
-                  e.target.style.borderColor = '#d6b87d';
+                  e.target.style.borderColor = '#cbd5e1';
                   e.target.style.boxShadow = 'none';
-                  e.target.style.backgroundColor = '#fefce8';
+                  e.target.style.backgroundColor = '#ffffff';
                 }}
               />
             </div>
 
-            <div className="form-group" style={{ marginBottom: '28px' }}>
-              <label className="form-label" htmlFor="password" style={{ fontWeight: '600', color: '#334155' }}>পাসওয়ার্ড</label>
+            <div className="form-group" style={{ marginBottom: '32px' }}>
+              <label className="form-label" htmlFor="password" style={{ fontWeight: '700', color: '#475569', fontSize: '0.88rem', marginBottom: '6px' }}>পাসওয়ার্ড</label>
               <input
                 type="password"
                 id="password"
@@ -125,22 +128,25 @@ export default function Login() {
                 onChange={(e) => setPassword(e.target.value)}
                 disabled={loadingState}
                 style={{
-                  backgroundColor: '#fefce8',
-                  border: '1px solid #d6b87d',
-                  borderRadius: '12px',
-                  padding: '12px 16px',
-                  fontSize: '1rem',
-                  transition: 'all 0.3s ease'
+                  backgroundColor: '#ffffff',
+                  border: '1px solid #cbd5e1',
+                  borderRadius: '14px',
+                  padding: '14px 16px',
+                  fontSize: '0.95rem',
+                  color: '#1e293b',
+                  fontWeight: '500',
+                  transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
+                  boxShadow: 'inset 0 1px 2px rgba(0,0,0,0.02)'
                 }}
                 onFocus={(e) => {
                   e.target.style.borderColor = 'var(--primary)';
-                  e.target.style.boxShadow = '0 0 0 3px var(--primary-glow)';
-                  e.target.style.backgroundColor = '#fffbeb';
+                  e.target.style.boxShadow = '0 0 0 4px var(--primary-glow)';
+                  e.target.style.backgroundColor = '#ffffff';
                 }}
                 onBlur={(e) => {
-                  e.target.style.borderColor = '#d6b87d';
+                  e.target.style.borderColor = '#cbd5e1';
                   e.target.style.boxShadow = 'none';
-                  e.target.style.backgroundColor = '#fefce8';
+                  e.target.style.backgroundColor = '#ffffff';
                 }}
               />
             </div>
@@ -151,32 +157,32 @@ export default function Login() {
               disabled={loadingState}
               style={{
                 width: '100%',
-                padding: '12px',
-                borderRadius: '12px',
-                fontSize: '1.1rem',
-                fontWeight: '600',
+                padding: '14px',
+                borderRadius: '14px',
+                fontSize: '1.05rem',
+                fontWeight: '700',
                 gap: '8px',
                 background: loadingState
                   ? 'var(--primary-dark)'
                   : 'linear-gradient(135deg, var(--primary-light) 0%, var(--primary) 50%, var(--primary-dark) 100%)',
                 border: 'none',
-                boxShadow: '0 4px 14px rgba(180, 83, 9, 0.38)',
-                transition: 'transform 0.2s, box-shadow 0.2s, background 0.3s'
+                boxShadow: '0 8px 20px rgba(194, 65, 12, 0.3)',
+                transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)'
               }}
               onMouseEnter={(e) => {
                 if (!loadingState) {
                   e.currentTarget.style.transform = 'translateY(-2px)';
-                  e.currentTarget.style.boxShadow = '0 8px 20px rgba(180, 83, 9, 0.48)';
+                  e.currentTarget.style.boxShadow = '0 12px 24px rgba(194, 65, 12, 0.45)';
                 }
               }}
               onMouseLeave={(e) => {
                 if (!loadingState) {
                   e.currentTarget.style.transform = 'translateY(0)';
-                  e.currentTarget.style.boxShadow = '0 4px 14px rgba(180, 83, 9, 0.38)';
+                  e.currentTarget.style.boxShadow = '0 8px 20px rgba(194, 65, 12, 0.3)';
                 }
               }}
             >
-              <LogIn size={20} />
+              <LogIn size={18} />
               <span>{loadingState ? 'প্রবেশ করা হচ্ছে...' : 'লগইন করুন'}</span>
             </button>
           </form>
