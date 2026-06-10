@@ -84,3 +84,14 @@ export const recalcInvestmentFields = (form, lastEdited) => {
 
   return updated;
 };
+
+export const getProjectDurationDisplay = (project, calculations) => {
+  const m = calculations || project;
+  const settled = m.isSettled ?? (project.status === 'completed' || m.remainingBalance === 0);
+  const months = m.durationMonths ?? (settled ? m.activeMonths : m.monthsElapsed);
+  return {
+    months,
+    label: settled ? 'সম্পন্ন' : 'চলমান',
+    suffix: settled ? 'মাসে' : 'মাস',
+  };
+};

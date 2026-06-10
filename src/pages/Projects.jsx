@@ -9,7 +9,7 @@ import Footer from '../components/Footer';
 import ReceiptModal from '../components/ReceiptModal';
 import { Plus, Search, Info, HandCoins, History, Edit, X, Save, ShieldAlert, Award, Download, FileText, Receipt, Trash2, AlertTriangle } from 'lucide-react';
 import { exportToExcel, exportToPDF } from '../utils/exportUtils';
-import { recalcInvestmentFields } from '../utils/investmentCalculations';
+import { recalcInvestmentFields, getProjectDurationDisplay } from '../utils/investmentCalculations';
 
 export default function Projects() {
   const { user } = useAuth();
@@ -530,6 +530,7 @@ export default function Projects() {
             const pct = progressBase > 0
               ? Math.min(100, Math.round((project.totalPaid / progressBase) * 100))
               : 0;
+            const duration = getProjectDurationDisplay(project);
 
             return (
               <div 
@@ -585,6 +586,9 @@ export default function Projects() {
                   </div>
                   <div style={{ minWidth: 0 }}>মাসিক কিস্তি: <strong style={{ color: 'var(--primary)' }}>{formatBDT(project.monthlyInstallmentAmount)}</strong></div>
                   <div style={{ minWidth: 0 }}>কিস্তির মেয়াদ: <strong>{toBanglaNumber(project.installmentDuration)} মাস</strong></div>
+                  <div style={{ minWidth: 0 }}>
+                    {duration.label}: <strong>{toBanglaNumber(duration.months)} {duration.suffix}</strong>
+                  </div>
                   <div style={{ minWidth: 0 }}>
                     আদায়কৃত: <strong style={{ color: 'var(--success)' }}>{formatBDT(project.totalPaid)}</strong>
                     {project.totalPaid - project.investmentAmount > 0 && (
@@ -689,6 +693,15 @@ export default function Projects() {
                       <td style={{ color: 'var(--text-muted)', padding: '4px 0' }}>শুরুর তারিখ:</td>
                       <td style={{ padding: '4px 0' }}>{formatBanglaDate(activeProjectDetail.project.startDate)}</td>
                     </tr>
+                    {(() => {
+                      const duration = getProjectDurationDisplay(activeProjectDetail.project, activeProjectDetail.calculations);
+                      return (
+                        <tr>
+                          <td style={{ color: 'var(--text-muted)', padding: '4px 0' }}>{duration.label} সময়:</td>
+                          <td style={{ fontWeight: 'bold', padding: '4px 0' }}>{toBanglaNumber(duration.months)} {duration.suffix}</td>
+                        </tr>
+                      );
+                    })()}
                     <tr>
                       <td style={{ color: 'var(--text-muted)', padding: '4px 0' }}>কিস্তির মেয়াদ:</td>
                       <td style={{ padding: '4px 0' }}>{toBanglaNumber(activeProjectDetail.project.installmentDuration)} মাস</td>
