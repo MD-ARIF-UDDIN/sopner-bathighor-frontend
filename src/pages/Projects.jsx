@@ -583,7 +583,7 @@ export default function Projects() {
                       </span>
                     )}
                   </div>
-                  <div style={{ minWidth: 0 }}>মাসিক কিস্তি: <strong style={{ color: 'var(--primary)' }}>{formatBDT(project.monthlyInstallmentAmount)}</strong></div>
+                  <div style={{ minWidth: 0 }}>মাসিক কিস্তি: <strong style={{ color: 'var(--primary)' }}>{formatBDT(project.monthlyInstallmentAmount)} ({toBanglaNumber(project.installmentDuration)} মাস)</strong></div>
                   <div style={{ minWidth: 0 }}>
                     আদায়কৃত: <strong style={{ color: 'var(--success)' }}>{formatBDT(project.totalPaid)}</strong>
                     {project.totalPaid - project.investmentAmount > 0 && (
