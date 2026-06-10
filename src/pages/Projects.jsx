@@ -7,7 +7,7 @@ import Header from '../components/Header';
 import BottomNav from '../components/BottomNav';
 import Footer from '../components/Footer';
 import ReceiptModal from '../components/ReceiptModal';
-import { Plus, Search, Info, HandCoins, History, Edit, X, Save, ShieldAlert, Award, Download, FileText, Receipt } from 'lucide-react';
+import { Plus, Search, Info, HandCoins, History, Edit, X, Save, ShieldAlert, Award, Download, FileText, Receipt, Trash2, AlertTriangle } from 'lucide-react';
 import { exportToExcel, exportToPDF } from '../utils/exportUtils';
 import { recalcInvestmentFields } from '../utils/investmentCalculations';
 
@@ -28,6 +28,10 @@ export default function Projects() {
   const [showCollectModal, setShowCollectModal] = useState(false);
   const [showHistoryModal, setShowHistoryModal] = useState(false);
   const [receiptData, setReceiptData] = useState(null); // For receipt modal
+
+  // Delete confirmation modal state
+  const [deleteModal, setDeleteModal] = useState(null); // { type: 'project'|'installment', target, label }
+  const [deleteConfirmInput, setDeleteConfirmInput] = useState('');
 
   // Selected Project for operations
   // Selected Project for operations
@@ -333,6 +337,58 @@ export default function Projects() {
     });
     setSelectedProject(null);
   };
+
+  // --- Delete handlers ---
+  const openDeleteModal = (type, target, label) => {
+    setDeleteModal({ type, target, label });
+    setDeleteConfirmInput('');
+  };
+
+  const closeDeleteModal = () => {
+    setDeleteModal(null);
+    setDeleteConfirmInput('');
+  };
+
+  const handleDeleteProject = async () => {
+    if (!deleteModal || deleteModal.type !== 'project') return;
+    try {
+      const promise = apiRequest(`/api/projects/${deleteModal.target._id}`, { method: 'DELETE' });
+      toast.promise(promise, {
+        loading: 'মুছে ফেলা হচ্ছে...',
+        success: 'প্রজেক্ট সফলভাবে মুছে ফেলা হয়েছে!',
+        error: (err) => err.message || 'প্রজেক্ট মুছতে ব্যর্থ হয়েছে'
+      });
+      await promise;
+      closeDeleteModal();
+      setActiveProjectDetail(null);
+      fetchProjects();
+    } catch (err) {}
+  };
+
+  const handleDeleteInstallment = async () => {
+    if (!deleteModal || deleteModal.type !== 'installment') return;
+    try {
+      const promise = apiRequest(`/api/projects/installment/${deleteModal.target._id}`, { method: 'DELETE' });
+      toast.promise(promise, {
+        loading: 'মুছে ফেলা হচ্ছে...',
+        success: 'কিস্তির রেকর্ড সফলভাবে মুছে ফেলা হয়েছে!',
+        error: (err) => err.message || 'রেকর্ড মুছতে ব্যর্থ হয়েছে'
+      });
+      await promise;
+      closeDeleteModal();
+      if (selectedProject) {
+        const data = await apiRequest(`/api/projects/${selectedProject._id}/history`);
+        setInstallmentsList(data);
+      }
+      fetchProjects();
+    } catch (err) {}
+  };
+
+  const handleDeleteConfirm = () => {
+    if (!deleteModal) return;
+    if (deleteModal.type === 'project') handleDeleteProject();
+    else if (deleteModal.type === 'installment') handleDeleteInstallment();
+  };
   // Generate Month list for select input based on project start and duration
   const getProjectMonthOptions = (proj) => {
     if (!proj) return [];
@@ -591,6 +647,17 @@ export default function Projects() {
                       <span>এডিট</span>
                     </button>
                   )}
+
+                  {isAdmin && (
+                    <button
+                      className="btn btn-sm"
+                      style={{ flex: 1, minHeight: '36px', gap: '2px', background: '#fee2e2', color: '#dc2626', border: '1px solid #fecaca' }}
+                      onClick={() => openDeleteModal('project', project, project.projectName)}
+                    >
+                      <Trash2 size={14} />
+                      <span>মুছুন</span>
+                    </button>
+                  )}
                 </div>
               </div>
             );
@@ -757,20 +824,30 @@ export default function Projects() {
               </div>
 
               {isAdmin && (
-                <button
-                  className="btn btn-accent"
-                  style={{ marginTop: '16px' }}
-                  onClick={() => {
-                    handleOpenCollectModal({
-                      ...activeProjectDetail.project,
-                      remainingBalance: activeProjectDetail.calculations.remainingBalance,
-                      totalPayable: activeProjectDetail.calculations.totalPayable
-                    });
-                  }}
-                >
-                  <HandCoins size={18} style={{ marginRight: '6px' }} />
-                  <span>নতুন কিস্তি আদায় রেকর্ড করুন</span>
-                </button>
+                <div style={{ marginTop: '16px', display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
+                  <button
+                    className="btn btn-accent"
+                    style={{ flex: 1 }}
+                    onClick={() => {
+                      handleOpenCollectModal({
+                        ...activeProjectDetail.project,
+                        remainingBalance: activeProjectDetail.calculations.remainingBalance,
+                        totalPayable: activeProjectDetail.calculations.totalPayable
+                      });
+                    }}
+                  >
+                    <HandCoins size={18} style={{ marginRight: '6px' }} />
+                    <span>নতুন কিস্তি আদায় রেকর্ড করুন</span>
+                  </button>
+                  <button
+                    className="btn"
+                    style={{ flex: 1, background: '#fee2e2', color: '#dc2626', border: '1px solid #fecaca' }}
+                    onClick={() => openDeleteModal('project', activeProjectDetail.project, activeProjectDetail.project.projectName)}
+                  >
+                    <Trash2 size={18} style={{ marginRight: '6px' }} />
+                    <span>প্রজেক্ট মুছে ফেলুন</span>
+                  </button>
+                </div>
               )}
             </div>
           </div>
@@ -1376,6 +1453,7 @@ export default function Projects() {
                         <th style={{ padding: '8px' }}>তারিখ</th>
                         <th style={{ padding: '8px', textAlign: 'right' }}>পরিমাণ</th>
                         <th style={{ padding: '8px', textAlign: 'center' }}>রশিদ</th>
+                        {isAdmin && <th style={{ padding: '8px', textAlign: 'center' }}>মুছুন</th>}
                       </tr>
                     </thead>
                     <tbody>
@@ -1417,6 +1495,21 @@ export default function Projects() {
                               <Receipt size={12} /> রশিদ
                             </button>
                           </td>
+                          {isAdmin && (
+                            <td style={{ padding: '8px', textAlign: 'center' }}>
+                              <button
+                                onClick={() => openDeleteModal('installment', inst, formatBanglaMonth(inst.month))}
+                                style={{
+                                  background: '#fee2e2', color: '#dc2626', border: '1px solid #fecaca',
+                                  borderRadius: '7px', padding: '5px 8px', cursor: 'pointer',
+                                  display: 'flex', alignItems: 'center', gap: '3px', fontSize: '0.72rem',
+                                  fontWeight: 700, fontFamily: 'inherit', whiteSpace: 'nowrap',
+                                }}
+                              >
+                                <Trash2 size={12} /> মুছুন
+                              </button>
+                            </td>
+                          )}
                         </tr>
                       ))}
                     </tbody>
@@ -1437,6 +1530,64 @@ export default function Projects() {
           receipt={receiptData}
           onClose={() => setReceiptData(null)}
         />
+      )}
+
+      {/* ----------------- MODAL: DELETE CONFIRMATION ----------------- */}
+      {deleteModal && (
+        <div className="modal-overlay" onClick={closeDeleteModal}>
+          <div className="modal-content" onClick={(e) => e.stopPropagation()} style={{ maxWidth: '400px' }}>
+            <div className="modal-header" style={{ borderBottom: '1px solid #fee2e2' }}>
+              <h3 style={{ color: '#dc2626', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                <AlertTriangle size={20} />
+                {deleteModal.type === 'project' ? 'প্রজেক্ট মুছে ফেলার নিশ্চিতকরণ' : 'রেকর্ড মুছে ফেলার নিশ্চিতকরণ'}
+              </h3>
+              <button className="modal-close" onClick={closeDeleteModal}><X size={24} /></button>
+            </div>
+
+            <div style={{ padding: '4px 0 16px' }}>
+              <div style={{ background: '#fff5f5', border: '1px solid #fecaca', borderRadius: '8px', padding: '12px', marginBottom: '16px', fontSize: '0.88rem', color: '#991b1b' }}>
+                ⚠️ সতর্কতা: এই কাজটি পূর্বাবস্থায় ফেরানো যাবে না।
+                {deleteModal.type === 'project' && (
+                  <div style={{ marginTop: '6px' }}>প্রজেক্টের সমস্ত কিস্তির রেকর্ডও মুছে যাবে।</div>
+                )}
+              </div>
+
+              <p style={{ fontSize: '0.9rem', marginBottom: '12px' }}>
+                নিশ্চিত করতে নিচের বাক্সে <strong>&ldquo;{deleteModal.label}&rdquo;</strong> টাইপ করুন:
+              </p>
+              <input
+                type="text"
+                className="form-control"
+                placeholder={deleteModal.label}
+                value={deleteConfirmInput}
+                onChange={(e) => setDeleteConfirmInput(e.target.value)}
+                style={{ marginBottom: '16px' }}
+              />
+              <div style={{ display: 'flex', gap: '8px' }}>
+                <button
+                  className="btn"
+                  style={{ flex: 1, background: '#f1f5f9', color: '#334155' }}
+                  onClick={closeDeleteModal}
+                >বাতিল</button>
+                <button
+                  className="btn"
+                  style={{
+                    flex: 1,
+                    background: deleteConfirmInput === deleteModal.label ? '#dc2626' : '#f87171',
+                    color: 'white',
+                    cursor: deleteConfirmInput === deleteModal.label ? 'pointer' : 'not-allowed',
+                    opacity: deleteConfirmInput === deleteModal.label ? 1 : 0.6
+                  }}
+                  disabled={deleteConfirmInput !== deleteModal.label}
+                  onClick={handleDeleteConfirm}
+                >
+                  <Trash2 size={16} style={{ marginRight: '4px' }} />
+                  স্থায়ীভাবে মুছুন
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
       )}
     </div>
   );

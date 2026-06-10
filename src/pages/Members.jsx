@@ -7,7 +7,7 @@ import Header from '../components/Header';
 import BottomNav from '../components/BottomNav';
 import Footer from '../components/Footer';
 import ReceiptModal from '../components/ReceiptModal';
-import { Plus, Search, Info, PlusCircle, History, Edit, X, Save, Calendar, Download, FileText, Receipt } from 'lucide-react';
+import { Plus, Search, Info, PlusCircle, History, Edit, X, Save, Calendar, Download, FileText, Receipt, Trash2, AlertTriangle } from 'lucide-react';
 import { exportToExcel, exportToPDF } from '../utils/exportUtils';
 
 export default function Members() {
@@ -27,6 +27,10 @@ export default function Members() {
   const [showDepositModal, setShowDepositModal] = useState(false);
   const [showHistoryModal, setShowHistoryModal] = useState(false);
   const [receiptData, setReceiptData] = useState(null); // For receipt modal
+
+  // Delete confirmation modal state
+  const [deleteModal, setDeleteModal] = useState(null); // { type: 'member'|'deposit', target, label }
+  const [deleteConfirmInput, setDeleteConfirmInput] = useState('');
 
   // Selected Member for operations
   // Selected Member for operations
@@ -285,17 +289,80 @@ export default function Members() {
     setSelectedMember(null);
   };
 
-  // Generate Month list for select input (e.g. current year and previous year months)
-  const getMonthDropdownOptions = () => {
+  // Generate Month list for select input starting from member's joining date up to current month
+  const getMonthDropdownOptions = (joiningDate) => {
     const list = [];
     const today = new Date();
-    // Build options list for last 12 months and next 2 months
-    for (let i = -12; i <= 2; i++) {
-      const d = new Date(today.getFullYear(), today.getMonth() + i, 1);
-      const val = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`;
-      list.push(val);
+    const currentYear = today.getFullYear();
+    const currentMonth = today.getMonth();
+
+    // Start from joining date if provided, else fall back to 12 months ago
+    const start = joiningDate ? new Date(joiningDate) : new Date(today.getFullYear(), today.getMonth() - 12, 1);
+    const startYear = start.getFullYear();
+    const startMonth = start.getMonth();
+
+    for (let y = startYear; y <= currentYear; y++) {
+      const mStart = (y === startYear) ? startMonth : 0;
+      const mEnd   = (y === currentYear) ? currentMonth : 11;
+      for (let m = mStart; m <= mEnd; m++) {
+        const val = `${y}-${String(m + 1).padStart(2, '0')}`;
+        list.push(val);
+      }
     }
     return list;
+  };
+
+  // --- Delete handlers ---
+  const openDeleteModal = (type, target, label) => {
+    setDeleteModal({ type, target, label });
+    setDeleteConfirmInput('');
+  };
+
+  const closeDeleteModal = () => {
+    setDeleteModal(null);
+    setDeleteConfirmInput('');
+  };
+
+  const handleDeleteMember = async () => {
+    if (!deleteModal || deleteModal.type !== 'member') return;
+    try {
+      const promise = apiRequest(`/api/members/${deleteModal.target._id}`, { method: 'DELETE' });
+      toast.promise(promise, {
+        loading: 'মুছে ফেলা হচ্ছে...',
+        success: 'সদস্য সফলভাবে মুছে ফেলা হয়েছে!',
+        error: (err) => err.message || 'সদস্য মুছতে ব্যর্থ হয়েছে'
+      });
+      await promise;
+      closeDeleteModal();
+      setActiveMemberDetail(null);
+      fetchMembers();
+    } catch (err) {}
+  };
+
+  const handleDeleteDeposit = async () => {
+    if (!deleteModal || deleteModal.type !== 'deposit') return;
+    try {
+      const promise = apiRequest(`/api/members/deposit/${deleteModal.target._id}`, { method: 'DELETE' });
+      toast.promise(promise, {
+        loading: 'মুছে ফেলা হচ্ছে...',
+        success: 'জমার রেকর্ড সফলভাবে মুছে ফেলা হয়েছে!',
+        error: (err) => err.message || 'রেকর্ড মুছতে ব্যর্থ হয়েছে'
+      });
+      await promise;
+      closeDeleteModal();
+      // Refresh history list
+      if (selectedMember) {
+        const data = await apiRequest(`/api/members/${selectedMember._id}/history`);
+        setDepositsList(data);
+      }
+      fetchMembers();
+    } catch (err) {}
+  };
+
+  const handleDeleteConfirm = () => {
+    if (!deleteModal) return;
+    if (deleteModal.type === 'member') handleDeleteMember();
+    else if (deleteModal.type === 'deposit') handleDeleteDeposit();
   };
 
   return (
@@ -507,6 +574,17 @@ export default function Members() {
                     <span>এডিট</span>
                   </button>
                 )}
+
+                {isAdmin && (
+                  <button
+                    className="btn btn-sm"
+                    style={{ flex: 1, minHeight: '36px', gap: '2px', background: '#fee2e2', color: '#dc2626', border: '1px solid #fecaca' }}
+                    onClick={() => openDeleteModal('member', member, member.name)}
+                  >
+                    <Trash2 size={14} />
+                    <span>মুছুন</span>
+                  </button>
+                )}
               </div>
             </div>
           ))
@@ -612,16 +690,26 @@ export default function Members() {
               </div>
 
               {isAdmin && (
-                <button
-                  className="btn btn-accent"
-                  style={{ marginTop: '16px' }}
-                  onClick={() => {
-                    handleOpenDepositModal(activeMemberDetail.member);
-                  }}
-                >
-                  <PlusCircle size={18} style={{ marginRight: '6px' }} />
-                  <span>নতুন জমা এন্ট্রি করুন</span>
-                </button>
+                <div style={{ marginTop: '16px', display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
+                  <button
+                    className="btn btn-accent"
+                    style={{ flex: 1 }}
+                    onClick={() => {
+                      handleOpenDepositModal(activeMemberDetail.member);
+                    }}
+                  >
+                    <PlusCircle size={18} style={{ marginRight: '6px' }} />
+                    <span>নতুন জমা এন্ট্রি করুন</span>
+                  </button>
+                  <button
+                    className="btn"
+                    style={{ flex: 1, background: '#fee2e2', color: '#dc2626', border: '1px solid #fecaca' }}
+                    onClick={() => openDeleteModal('member', activeMemberDetail.member, activeMemberDetail.member.name)}
+                  >
+                    <Trash2 size={18} style={{ marginRight: '6px' }} />
+                    <span>সদস্য মুছে ফেলুন</span>
+                  </button>
+                </div>
               )}
             </div>
           </div>
@@ -859,7 +947,7 @@ export default function Members() {
                     onChange={(e) => setDepositForm({ ...depositForm, month: e.target.value })}
                   >
                     <option value="">মাস নির্বাচন করুন...</option>
-                    {getMonthDropdownOptions().map((mOption) => (
+                    {getMonthDropdownOptions(selectedMember.joiningDate).map((mOption) => (
                       <option key={mOption} value={mOption}>
                         {formatBanglaMonth(mOption)}
                       </option>
@@ -927,6 +1015,7 @@ export default function Members() {
                         <th style={{ padding: '8px' }}>তারিখ</th>
                         <th style={{ padding: '8px', textAlign: 'right' }}>পরিমাণ</th>
                         <th style={{ padding: '8px', textAlign: 'center' }}>রশিদ</th>
+                        {isAdmin && <th style={{ padding: '8px', textAlign: 'center' }}>মুছুন</th>}
                       </tr>
                     </thead>
                     <tbody>
@@ -968,6 +1057,21 @@ export default function Members() {
                               <Receipt size={12} /> রশিদ
                             </button>
                           </td>
+                          {isAdmin && (
+                            <td style={{ padding: '8px', textAlign: 'center' }}>
+                              <button
+                                onClick={() => openDeleteModal('deposit', dep, formatBanglaMonth(dep.month))}
+                                style={{
+                                  background: '#fee2e2', color: '#dc2626', border: '1px solid #fecaca',
+                                  borderRadius: '7px', padding: '5px 8px', cursor: 'pointer',
+                                  display: 'flex', alignItems: 'center', gap: '3px', fontSize: '0.72rem',
+                                  fontWeight: 700, fontFamily: 'inherit', whiteSpace: 'nowrap',
+                                }}
+                              >
+                                <Trash2 size={12} /> মুছুন
+                              </button>
+                            </td>
+                          )}
                         </tr>
                       ))}
                     </tbody>
@@ -988,6 +1092,64 @@ export default function Members() {
           receipt={receiptData}
           onClose={() => setReceiptData(null)}
         />
+      )}
+
+      {/* ----------------- MODAL: DELETE CONFIRMATION ----------------- */}
+      {deleteModal && (
+        <div className="modal-overlay" onClick={closeDeleteModal}>
+          <div className="modal-content" onClick={(e) => e.stopPropagation()} style={{ maxWidth: '400px' }}>
+            <div className="modal-header" style={{ borderBottom: '1px solid #fee2e2' }}>
+              <h3 style={{ color: '#dc2626', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                <AlertTriangle size={20} />
+                {deleteModal.type === 'member' ? 'সদস্য মুছে ফেলার নিশ্চিতকরণ' : 'রেকর্ড মুছে ফেলার নিশ্চিতকরণ'}
+              </h3>
+              <button className="modal-close" onClick={closeDeleteModal}><X size={24} /></button>
+            </div>
+
+            <div style={{ padding: '4px 0 16px' }}>
+              <div style={{ background: '#fff5f5', border: '1px solid #fecaca', borderRadius: '8px', padding: '12px', marginBottom: '16px', fontSize: '0.88rem', color: '#991b1b' }}>
+                ⚠️ সতর্কতা: এই কাজটি পূর্বাবস্থায় ফেরানো যাবে না।
+                {deleteModal.type === 'member' && (
+                  <div style={{ marginTop: '6px' }}>সদস্যের সমস্ত জমার রেকর্ড এবং ব্যবহারকারী অ্যাকাউন্টও মুছে যাবে।</div>
+                )}
+              </div>
+
+              <p style={{ fontSize: '0.9rem', marginBottom: '12px' }}>
+                নিশ্চিত করতে নিচের বাক্সে <strong>&ldquo;{deleteModal.label}&rdquo;</strong> টাইপ করুন:
+              </p>
+              <input
+                type="text"
+                className="form-control"
+                placeholder={deleteModal.label}
+                value={deleteConfirmInput}
+                onChange={(e) => setDeleteConfirmInput(e.target.value)}
+                style={{ marginBottom: '16px' }}
+              />
+              <div style={{ display: 'flex', gap: '8px' }}>
+                <button
+                  className="btn"
+                  style={{ flex: 1, background: '#f1f5f9', color: '#334155' }}
+                  onClick={closeDeleteModal}
+                >বাতিল</button>
+                <button
+                  className="btn"
+                  style={{
+                    flex: 1,
+                    background: deleteConfirmInput === deleteModal.label ? '#dc2626' : '#f87171',
+                    color: 'white',
+                    cursor: deleteConfirmInput === deleteModal.label ? 'pointer' : 'not-allowed',
+                    opacity: deleteConfirmInput === deleteModal.label ? 1 : 0.6
+                  }}
+                  disabled={deleteConfirmInput !== deleteModal.label}
+                  onClick={handleDeleteConfirm}
+                >
+                  <Trash2 size={16} style={{ marginRight: '4px' }} />
+                  স্থায়ীভাবে মুছুন
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
       )}
     </div>
   );
