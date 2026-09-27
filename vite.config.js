@@ -8,7 +8,7 @@ export default defineConfig({
     port: 3000,
     proxy: {
       '/api': {
-        target: 'https://shopner-bathighor-server.onrender.com',
+        target: 'https://investment-erp-mb9o.onrender.com',
         changeOrigin: true
       }
     }

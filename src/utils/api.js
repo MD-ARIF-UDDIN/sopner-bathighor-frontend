@@ -1,4 +1,4 @@
-const BASE_URL = import.meta.env.VITE_API_URL || 'https://shopner-bathighor-server.onrender.com';
+const BASE_URL = import.meta.env.VITE_API_URL || 'https://investment-erp-mb9o.onrender.com';
 
 const getAuthToken = () => localStorage.getItem('somiti_token');
 
